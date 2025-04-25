@@ -9,6 +9,7 @@ export const createAuthRouter = ({ authModel }) => {
   authRouter.post("/login", authController.login);
   authRouter.post("/register", authController.register);
   authRouter.post("/logout", authController.logout);
+  authRouter.delete("/delete/:id", authController.deleteUser);
 
   return authRouter;
 };

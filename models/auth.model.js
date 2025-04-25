@@ -10,6 +10,7 @@ const User = Schema("User", {
   username: { type: String, required: true },
   password: { type: String, required: true },
   isActive: { type: Boolean, default: true },
+  isAdmin: { type: Boolean, default: false },
   createdAt: { type: Date, default: formatDateToYYYYMMDD(new Date()) },
   updatedAt: { type: Date, default: formatDateToYYYYMMDD(new Date()) },
 });
@@ -26,7 +27,7 @@ export class AuthModel {
 
       if (!isValid) throw new Error("Invalid password");
 
-      return { username: user.username, id: user._id };
+      return { username: user.username, id: user._id, isAdmin: user.isAdmin };
     } catch (error) {
       throw new Error("Login failed: " + error.message);
     }
@@ -49,9 +50,25 @@ export class AuthModel {
       return {
         id: newUser._id,
         username: newUser.username,
+        isAdmin: false,
       };
     } catch (error) {
       throw new Error("Register failed: " + error.message);
+    }
+  }
+
+  static async deleteUser({ id }) {
+    try {
+      const user = User.findOne({ _id: id });
+      if (!user) throw new Error("User not found");
+
+      if (user.isAdmin) throw new Error("Cannot delete admin user");
+
+      user.isActive = false;
+      user.updatedAt = formatDateToYYYYMMDD(new Date());
+      user.save();
+    } catch (error) {
+      throw new Error("Delete user failed: " + error.message);
     }
   }
 }

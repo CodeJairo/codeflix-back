@@ -19,7 +19,7 @@ export class AuthController {
       const user = await this.authModel.login({ username, password });
 
       const token = jwt.sign(
-        { id: user.id, username: user.username },
+        { id: user.id, username: user.username, isAdmin: user.isAdmin },
         JWT_SECRET_KEY,
         {
           expiresIn: "1h",
@@ -52,7 +52,7 @@ export class AuthController {
       const user = await this.authModel.register({ username, password });
 
       const token = jwt.sign(
-        { id: user.id, username: user.username },
+        { id: user.id, username: user.username, isAdmin: user.isAdmin },
         JWT_SECRET_KEY,
         {
           expiresIn: "1h",
@@ -75,5 +75,25 @@ export class AuthController {
   logout = (_, res) => {
     res.clearCookie("auth_token");
     return res.status(200).json({ message: "Logged out successfully" });
+  };
+
+  deleteUser = async (req, res) => {
+    const token = req.cookies.auth_token;
+    if (!token) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    try {
+      const decodedToken = jwt.verify(token, JWT_SECRET_KEY);
+      const { isAdmin } = decodedToken;
+      if (!isAdmin) {
+        return res.status(403).json({ message: "User not authorized" });
+      }
+      const { id } = req.params;
+      await this.authModel.deleteUser({ id });
+      return res.status(200).json({ message: "User deleted successfully" });
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
   };
 }
