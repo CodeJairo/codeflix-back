@@ -7,7 +7,11 @@ export const createMovieRouter = ({ movieModel }) => {
   const movieController = new MovieController({ movieModel });
 
   movieRouter.post("/create", movieController.create);
+  movieRouter.patch("/update/:id", movieController.update);
+  movieRouter.get("/delete/:id", movieController.delete);
   movieRouter.get("/get-all", movieController.getAll);
+  movieRouter.get("/get/:id", movieController.getById);
+  movieRouter.get("/get-by-name/:name", movieController.getByName);
 
   return movieRouter;
 };

@@ -57,4 +57,17 @@ export class MovieModel {
     }
     return Movie.find({ isActive: true });
   }
+
+  static async updateMovie(updater, id, { partialMovie }) {
+    const movie = await Movie.findOne({ _id: id });
+    if (!movie) throw new Error("Movie not found");
+    if (movie.createdBy !== updater) throw new Error("Unauthorized");
+
+    return await movie
+      .update({
+        ...partialMovie,
+        updatedAt: formatDateToYYYYMMDD(new Date()),
+      })
+      .save();
+  }
 }

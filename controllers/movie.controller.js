@@ -1,4 +1,7 @@
-import { validateMovie } from "../schemas/movie.schema.js";
+import {
+  validateMovie,
+  validatePartialMovie,
+} from "../schemas/movie.schema.js";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET_KEY } from "../config.js";
 
@@ -48,6 +51,39 @@ export class MovieController {
     }
   };
 
+  update = async (req, res) => {
+    const token = req.cookies.auth_token;
+    if (!token) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    const { id } = req.params;
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ message: "Movie ID is required" });
+    }
+    const validationMovie = validatePartialMovie(req.body);
+    if (!validationMovie.success) {
+      return res
+        .status(400)
+        .json({ message: JSON.parse(validationMovie.error.message) });
+    }
+
+    const { data: partialMovie } = validationMovie;
+    console.log(partialMovie);
+    try {
+      const decodedToken = jwt.verify(token, JWT_SECRET_KEY);
+      const { id: updater } = decodedToken;
+      const updatedMovie = await this.movieModel.updateMovie(updater, id, {
+        partialMovie,
+      });
+      res.status(200).send(updatedMovie);
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
+  };
+
+  delete = async (req, res) => {};
+
   getAll = async (req, res) => {
     const { genre } = req.query;
     try {
@@ -57,4 +93,7 @@ export class MovieController {
       return res.status(400).json({ message: error.message });
     }
   };
+
+  getById = async (req, res) => {};
+  getByName = async (req, res) => {};
 }
