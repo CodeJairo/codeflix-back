@@ -24,7 +24,7 @@ export const createMovieRouter = ({ authModel, movieModel }) => {
   );
   movieRouter.get("/get-all", movieController.getAll);
   movieRouter.get("/get/:id", movieController.getById);
-  movieRouter.get("/get-by-name/:name", movieController.getByName);
+  movieRouter.get("/get-by-name", movieController.getByName);
 
   return movieRouter;
 };

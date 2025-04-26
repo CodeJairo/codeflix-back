@@ -66,6 +66,7 @@ export class MovieModel {
   }) {
     const movie = await Movie.findOne({ _id: movieId });
     if (!movie) throw new Error("Movie not found");
+
     if (movie.createdBy === updaterUserId || isAdminUpdater === true) {
       return await movie
         .update({
@@ -74,6 +75,7 @@ export class MovieModel {
         })
         .save();
     }
+
     throw new Error("Unauthorized");
   }
 
@@ -84,5 +86,22 @@ export class MovieModel {
       return await movie.update({ isActive: false }).save();
     }
     throw new Error("Unauthorized");
+  }
+
+  static async getMovieById({ movieId }) {
+    const movie = await Movie.findOne({ _id: movieId, isActive: true });
+    if (!movie) throw new Error("Movie not found");
+    return movie;
+  }
+
+  static async getMoviesByName({ title }) {
+    if (title) {
+      const lowerCaseTitle = title.toLowerCase();
+      return await Movie.find({
+        title: { $regex: lowerCaseTitle, $options: "i" },
+        isActive: true,
+      });
+    }
+    return await Movie.find({ isActive: true });
   }
 }

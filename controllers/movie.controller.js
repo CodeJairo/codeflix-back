@@ -83,7 +83,30 @@ export class MovieController {
     }
   };
 
-  getById = async (req, res) => {};
+  getById = async (req, res) => {
+    const { id } = req.params;
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ message: "Movie ID is required" });
+    }
 
-  getByName = async (req, res) => {};
+    try {
+      const movie = await this.movieModel.getMovieById({ movieId: id });
+      if (!movie) {
+        return res.status(404).json({ message: "Movie not found" });
+      }
+      res.status(200).send(movie);
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
+  };
+
+  getByName = async (req, res) => {
+    const { title } = req.query;
+    try {
+      const movies = await this.movieModel.getMoviesByName({ title });
+      res.status(200).send(movies);
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
+  };
 }
