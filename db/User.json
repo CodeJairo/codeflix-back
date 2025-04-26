@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "_id": "6b887f92-9906-4ea2-9022-13330f03a817",
+    "username": "admin1",
+    "password": "$2b$10$MV9qeO78mlx/o5ZeVw7mq.6yFvh6BWK0IW0EKZrF4oFq2XB3AFaV6",
+    "isActive": true,
+    "isAdmin": true,
+    "createdAt": "2025-04-25",
+    "updatedAt": "2025-04-25"
+  }
+]

@@ -71,4 +71,29 @@ export class AuthModel {
       throw new Error("Delete user failed: " + error.message);
     }
   }
+
+  static async validateUserStatus(id) {
+    try {
+      const user = User.findOne({ _id: id });
+      if (!user || !user.isActive) return false;
+      return true;
+    } catch (error) {
+      throw new Error("User validation failed: " + error.message);
+    }
+  }
+
+  static async getUserById(id) {
+    try {
+      const user = User.findOne({ _id: id });
+      if (!user) throw new Error("User not found");
+      return {
+        id: user._id,
+        username: user.username,
+        isActive: user.isActive,
+        isAdmin: user.isAdmin,
+      };
+    } catch (error) {
+      throw new Error("Get user by ID failed: " + error.message);
+    }
+  }
 }

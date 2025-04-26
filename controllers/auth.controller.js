@@ -19,7 +19,7 @@ export class AuthController {
       const user = await this.authModel.login({ username, password });
 
       const token = jwt.sign(
-        { id: user.id, username: user.username, isAdmin: user.isAdmin },
+        { id: user.id, isAdmin: user.isAdmin },
         JWT_SECRET_KEY,
         {
           expiresIn: "1h",
@@ -52,7 +52,7 @@ export class AuthController {
       const user = await this.authModel.register({ username, password });
 
       const token = jwt.sign(
-        { id: user.id, username: user.username, isAdmin: user.isAdmin },
+        { id: user.id, isAdmin: user.isAdmin },
         JWT_SECRET_KEY,
         {
           expiresIn: "1h",

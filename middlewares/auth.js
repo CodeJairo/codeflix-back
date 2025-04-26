@@ -1,0 +1,35 @@
+import jwt from "jsonwebtoken";
+import { JWT_SECRET_KEY } from "../config.js";
+
+export const authenticate = (getUserById) => {
+  return async (req, res, next) => {
+    const token = req.cookies.auth_token;
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET_KEY);
+      const userId = decoded.id;
+
+      const user = await getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.isActive === false) {
+        return res
+          .status(403)
+          .json({ message: "User inactive, please contact support" });
+      }
+
+      req.user = user;
+      next();
+    } catch (error) {
+      res.clearCookie("auth_token");
+      return res
+        .status(401)
+        .json({ message: "User inactive, please contact support" });
+    }
+  };
+};

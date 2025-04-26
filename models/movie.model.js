@@ -58,16 +58,31 @@ export class MovieModel {
     return Movie.find({ isActive: true });
   }
 
-  static async updateMovie(updater, id, { partialMovie }) {
-    const movie = await Movie.findOne({ _id: id });
+  static async updateMovie({
+    isAdminUpdater,
+    updaterUserId,
+    movieId,
+    partialMovie,
+  }) {
+    const movie = await Movie.findOne({ _id: movieId });
     if (!movie) throw new Error("Movie not found");
-    if (movie.createdBy !== updater) throw new Error("Unauthorized");
+    if (movie.createdBy === updaterUserId || isAdminUpdater === true) {
+      return await movie
+        .update({
+          ...partialMovie,
+          updatedAt: formatDateToYYYYMMDD(new Date()),
+        })
+        .save();
+    }
+    throw new Error("Unauthorized");
+  }
 
-    return await movie
-      .update({
-        ...partialMovie,
-        updatedAt: formatDateToYYYYMMDD(new Date()),
-      })
-      .save();
+  static async deleteMovie({ isAdminDeleter, deleterUserId, movieId }) {
+    const movie = await Movie.findOne({ _id: movieId });
+    if (!movie) throw new Error("Movie not found");
+    if (movie.createdBy === deleterUserId || isAdminDeleter === true) {
+      return await movie.update({ isActive: false }).save();
+    }
+    throw new Error("Unauthorized");
   }
 }

@@ -13,7 +13,7 @@ export const createApp = ({ authModel, movieModel }) => {
   const PORT = process.env.PORT ?? 3000;
 
   app.use("/auth", createAuthRouter({ authModel }));
-  app.use("/movie", createMovieRouter({ movieModel }));
+  app.use("/movie", createMovieRouter({ authModel, movieModel }));
 
   app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
