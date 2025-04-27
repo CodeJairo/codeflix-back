@@ -8,6 +8,8 @@ const { Schema } = new DBLocal({ path: "./db" });
 const User = Schema("User", {
   _id: { type: String, required: true },
   username: { type: String, required: true },
+  email: { type: String, required: true },
+  isValidated: { type: Boolean, default: false },
   password: { type: String, required: true },
   isActive: { type: Boolean, default: true },
   isAdmin: { type: Boolean, default: false },
@@ -16,9 +18,9 @@ const User = Schema("User", {
 });
 
 export class AuthModel {
-  static async login({ username, password }) {
+  static async login({ email, password }) {
     try {
-      const user = User.findOne({ username });
+      const user = User.findOne({ email });
       if (!user) throw new Error("User not found");
       if (!user.isActive)
         throw new Error("User inactive, please contact support");
@@ -27,22 +29,32 @@ export class AuthModel {
 
       if (!isValid) throw new Error("Invalid password");
 
-      return { username: user.username, id: user._id, isAdmin: user.isAdmin };
+      return {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        isActive: user.isActive,
+        isValidated: user.isValidated,
+        isAdmin: user.isAdmin,
+      };
     } catch (error) {
       throw new Error("Login failed: " + error.message);
     }
   }
 
-  static async register({ username, password }) {
+  static async register({ username, email, password }) {
     try {
       const user = User.findOne({ username });
       if (user) throw new Error("User already exists");
+      const emailExists = User.findOne({ email });
+      if (emailExists) throw new Error("Email already exists");
 
       const id = crypto.randomUUID();
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const newUser = User.create({
         _id: id,
+        email,
         username,
         password: hashedPassword,
       }).save();
@@ -50,6 +62,9 @@ export class AuthModel {
       return {
         id: newUser._id,
         username: newUser.username,
+        email: newUser.email,
+        isActive: true,
+        isValidated: false,
         isAdmin: false,
       };
     } catch (error) {
@@ -89,7 +104,9 @@ export class AuthModel {
       return {
         id: user._id,
         username: user.username,
+        email: user.email,
         isActive: user.isActive,
+        isValidated: user.isValidated,
         isAdmin: user.isAdmin,
       };
     } catch (error) {

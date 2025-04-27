@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import { JWT_SECRET_KEY } from "../config.js";
-import { validateUser } from "../schemas/user.schema.js";
+import { JWT_SECRET_KEY } from "../config/config.js";
+import { validateLogin, validateUser } from "../schemas/user.schema.js";
 
 export class AuthController {
   constructor({ authModel }) {
@@ -8,15 +8,15 @@ export class AuthController {
   }
 
   login = async (req, res) => {
-    const validationUser = validateUser(req.body);
+    const validationUser = validateLogin(req.body);
     if (!validationUser.success) {
       return res
         .status(400)
         .json({ message: JSON.parse(validationUser.error.message) });
     }
-    const { username, password } = validationUser.data;
+    const { email, password } = validationUser.data;
     try {
-      const user = await this.authModel.login({ username, password });
+      const user = await this.authModel.login({ email, password });
 
       const token = jwt.sign(
         { id: user.id, isAdmin: user.isAdmin },
@@ -46,10 +46,10 @@ export class AuthController {
         .status(400)
         .json({ message: JSON.parse(validationUser.error.message) });
     }
-    const { username, password } = validationUser.data;
+    const { username, email, password } = validationUser.data;
 
     try {
-      const user = await this.authModel.register({ username, password });
+      const user = await this.authModel.register({ username, email, password });
 
       const token = jwt.sign(
         { id: user.id, isAdmin: user.isAdmin },
