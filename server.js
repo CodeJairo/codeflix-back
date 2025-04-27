@@ -1,4 +1,18 @@
 import { createApp } from "./app.js";
 import { AuthModel } from "./models/auth.model.js";
 import { MovieModel } from "./models/movie.model.js";
-createApp({ authModel: AuthModel, movieModel: MovieModel });
+import { EmailService } from "./services/email.service.js";
+import config from "./config/config.js";
+
+const emailService = new EmailService({
+  mailerEmail: config.mailerEmail,
+  mailerKey: config.mailerKey,
+  mailerService: config.mailerService,
+});
+
+createApp({
+  authModel: AuthModel,
+  movieModel: MovieModel,
+  emailService,
+  config,
+});

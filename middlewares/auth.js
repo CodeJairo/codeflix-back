@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { JWT_SECRET_KEY } from "../config/config.js";
+import config from "../config/config.js";
 
 export const authenticate = (getUserById) => {
   return async (req, res, next) => {
@@ -9,7 +9,7 @@ export const authenticate = (getUserById) => {
     }
 
     try {
-      const decoded = jwt.verify(token, JWT_SECRET_KEY);
+      const decoded = jwt.verify(token, config.jwtSecretKey);
       const userId = decoded.id;
 
       const user = await getUserById(userId);

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { MovieController } from "../controllers/movie.controller.js";
 import { authenticate } from "../middlewares/auth.js";
 
-export const createMovieRouter = ({ authModel, movieModel }) => {
+export const createMovieRouter = ({ authModel, movieModel, config }) => {
   const movieRouter = Router();
 
   const movieController = new MovieController({ movieModel });

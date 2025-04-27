@@ -97,6 +97,16 @@ export class AuthModel {
     }
   }
 
+  static async verifyEmail({ email }) {
+    const user = User.findOne({ email });
+    if (!user) throw new Error("User not found");
+    if (user.isValidated) throw new Error("User already validated");
+
+    user.isValidated = true;
+    user.updatedAt = formatDateToYYYYMMDD(new Date());
+    user.save();
+  }
+
   static async getUserById(id) {
     try {
       const user = User.findOne({ _id: id });
