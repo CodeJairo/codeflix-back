@@ -13,6 +13,7 @@ export const createApp = ({ authModel, movieModel, config, emailService }) => {
   app.use(cookieParser());
   app.use(corsMiddleware());
   app.disable("x-powered-by");
+  app.use("/public", express.static("public"));
 
   app.use(
     "/auth",
