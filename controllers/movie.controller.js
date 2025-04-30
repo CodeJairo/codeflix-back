@@ -1,7 +1,3 @@
-import {
-  validateMovie,
-  validatePartialMovie,
-} from "../schemas/movie.schema.js";
 import { CustomError } from "../utils/custom-error.js";
 
 export class MovieController {

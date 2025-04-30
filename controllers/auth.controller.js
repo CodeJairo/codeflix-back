@@ -4,11 +4,11 @@ import {
   CustomError,
   AuthorizationError,
 } from "../utils/custom-error.js";
+import config from "../config/config.js";
 
 export class AuthController {
-  constructor({ authModel, emailService, config }) {
+  constructor({ authModel, emailService }) {
     this.authModel = authModel;
-    this.config = config;
     this.emailService = emailService;
   }
 
@@ -48,7 +48,7 @@ export class AuthController {
   verifyEmail = async (req, res) => {
     try {
       const { token } = req.params;
-      const decodedToken = jwt.verify(token, this.config.jwtSecretKey);
+      const decodedToken = jwt.verify(token, config.jwtSecretKey);
       const { email } = decodedToken;
       await this.authModel.verifyEmail({ email });
       res.status(200).json({ message: "Email verified successfully" });
@@ -91,7 +91,7 @@ export class AuthController {
   #setAuthCookie = (res, user) => {
     const token = jwt.sign(
       { id: user.id, isAdmin: user.isAdmin },
-      this.config.jwtSecretKey,
+      config.jwtSecretKey,
       { expiresIn: "1h" }
     );
 

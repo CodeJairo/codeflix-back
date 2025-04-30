@@ -7,7 +7,7 @@ import {
   validatePartialMovie,
 } from "../schemas/movie.schema.js";
 
-export const createMovieRouter = ({ authModel, movieModel, config }) => {
+export const createMovieRouter = ({ authModel, movieModel }) => {
   const movieRouter = Router();
 
   const movieController = new MovieController({ movieModel });

@@ -1,16 +1,16 @@
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
-import { CustomError, InternalServerError } from "../utils/custom-error.js";
+import { InternalServerError } from "../utils/custom-error.js";
 import { createVerificationEmail } from "../utils/verification-email.js";
+import config from "../config/config.js";
 
 export class EmailService {
-  constructor({ config }) {
-    this.config = config;
+  constructor() {
     this.transporter = nodemailer.createTransport({
-      service: this.config.mailerService,
+      service: config.mailerService,
       auth: {
-        pass: this.config.mailerKey,
-        user: this.config.mailerEmail,
+        pass: config.mailerKey,
+        user: config.mailerEmail,
       },
       tls: {
         rejectUnauthorized: false,
@@ -20,7 +20,7 @@ export class EmailService {
 
   async sendVerificationEmail(user) {
     try {
-      const token = jwt.sign({ email: user.email }, this.config.jwtSecretKey, {
+      const token = jwt.sign({ email: user.email }, config.jwtSecretKey, {
         expiresIn: "24h",
       });
 
@@ -28,7 +28,7 @@ export class EmailService {
         throw new InternalServerError("Error generating token");
       }
 
-      const verificationLink = `${this.config.apiBaseUrl}/auth/verify/${token}`;
+      const verificationLink = `${config.apiBaseUrl}/auth/verify/${token}`;
       const html = createVerificationEmail({
         user: user.username,
         verificationLink,

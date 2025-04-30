@@ -4,13 +4,12 @@ import { validateRequest } from "../middlewares/validate-request.js";
 import { validateLogin, validateUser } from "../schemas/user.schema.js";
 import { authenticate } from "../middlewares/auth.js";
 
-export const createAuthRouter = ({ authModel, emailService, config }) => {
+export const createAuthRouter = ({ authModel, emailService }) => {
   const authRouter = Router();
 
   const authController = new AuthController({
     authModel,
     emailService,
-    config,
   });
 
   authRouter.post(
