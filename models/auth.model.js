@@ -8,6 +8,7 @@ import {
   InternalServerError,
   NotFoundError,
   CustomError,
+  AuthenticationError,
 } from "../utils/custom-error.js";
 
 const { Schema } = new DBLocal({ path: "./db" });
@@ -27,15 +28,9 @@ const User = Schema("User", {
 export class AuthModel {
   static async login({ email, password }) {
     try {
-      const user = User.findOne({ email });
-      if (!user) throw new NotFoundError("User not found");
-      if (!user.isActive)
-        throw new AuthorizationError("User inactive, please contact support");
-
+      const user = await User.findOne({ email });
       const isValid = await bcrypt.compare(password, user.password);
-
-      if (!isValid) throw new AuthorizationError("Invalid password");
-
+      if (!isValid) throw new AuthenticationError("Invalid credentials");
       return {
         id: user._id,
         username: user.username,
@@ -51,15 +46,8 @@ export class AuthModel {
   }
 
   static async register({ username, email, password }) {
-    const usernameExists = User.findOne({ username });
-    const emailExists = User.findOne({ email });
-
-    if (usernameExists) throw new ConflictError("Username already exists");
-    if (emailExists) throw new ConflictError("Email already exists");
-
     const id = crypto.randomUUID();
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = User.create({
       _id: id,
       email,
@@ -83,12 +71,12 @@ export class AuthModel {
 
   static async deleteUser({ id }) {
     try {
-      const user = User.findOne({ _id: id });
+      let user = User.findOne({ _id: id });
+      console.error(user);
       if (!user) throw new NotFoundError("User not found");
-
+      if (!user.isActive) throw new ConflictError("User already deleted");
       if (user.isAdmin)
-        throw new AuthorizationError("Cannot delete admin user");
-
+        throw new AuthorizationError("Cannot delete admin users");
       user.isActive = false;
       user.updatedAt = formatDateToYYYYMMDD(new Date());
       user.save();
@@ -114,7 +102,6 @@ export class AuthModel {
       const user = User.findOne({ email });
       if (!user) throw new NotFoundError("User not found");
       if (user.isValidated) throw new ConflictError("Email already verified");
-
       user.isValidated = true;
       user.updatedAt = formatDateToYYYYMMDD(new Date());
       user.save();
@@ -124,10 +111,9 @@ export class AuthModel {
     }
   }
 
-  static async getUserById(id) {
-    try {
-      const user = User.findOne({ _id: id });
-      if (!user) throw new NotFoundError("User not found");
+  static async getUserById({ id }) {
+    const user = User.findOne({ _id: id });
+    if (user)
       return {
         id: user._id,
         username: user.username,
@@ -136,9 +122,34 @@ export class AuthModel {
         isValidated: user.isValidated,
         isAdmin: user.isAdmin,
       };
-    } catch (error) {
-      if (error instanceof CustomError) throw error;
-      throw new InternalServerError("User retrieval failed");
-    }
+    return null;
+  }
+
+  static async getUserByEmail(email) {
+    const user = User.findOne({ email });
+    if (user)
+      return {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        isActive: user.isActive,
+        isValidated: user.isValidated,
+        isAdmin: user.isAdmin,
+      };
+    return null;
+  }
+
+  static async getUserByUsername(username) {
+    const user = User.findOne({ username });
+    if (user)
+      return {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        isActive: user.isActive,
+        isValidated: user.isValidated,
+        isAdmin: user.isAdmin,
+      };
+    return null;
   }
 }

@@ -1,22 +1,16 @@
-import jwt from "jsonwebtoken";
-import {
-  InternalServerError,
-  CustomError,
-  AuthorizationError,
-} from "../utils/custom-error.js";
-import config from "../config/config.js";
+import { CustomError } from "../utils/custom-error.js";
 
 export class AuthController {
-  constructor({ authModel, emailService }) {
+  constructor({ authModel, emailService, authService }) {
     this.authModel = authModel;
     this.emailService = emailService;
+    this.authService = authService;
   }
 
   login = async (req, res) => {
     try {
-      const { email, password } = req.body;
-      const user = await this.authModel.login({ email, password });
-      this.#setAuthCookie(res, user);
+      const user = await this.authService.login({ data: req.body, res });
+      res.status(200).json(user);
     } catch (error) {
       this.#handleError(error, res);
     }
@@ -24,22 +18,8 @@ export class AuthController {
 
   register = async (req, res) => {
     try {
-      const { username, email, password } = req.body;
-      const user = await this.authModel.register({
-        username,
-        email,
-        password,
-      });
-
-      setImmediate(async () => {
-        try {
-          await this.emailService.sendVerificationEmail(user);
-        } catch (error) {
-          console.log(error.message);
-        }
-      });
-
-      this.#setAuthCookie(res, user);
+      const user = await this.authService.register({ data: req.body, res });
+      res.status(201).json(user);
     } catch (error) {
       this.#handleError(error, res);
     }
@@ -47,10 +27,9 @@ export class AuthController {
 
   verifyEmail = async (req, res) => {
     try {
-      const { token } = req.params;
-      const decodedToken = jwt.verify(token, config.jwtSecretKey);
-      const { email } = decodedToken;
-      await this.authModel.verifyEmail({ email });
+      const user = await this.emailService.verifyEmail({
+        token: req.params.token,
+      });
       res.status(200).json({ message: "Email verified successfully" });
     } catch (error) {
       this.#handleError(error, res);
@@ -59,7 +38,7 @@ export class AuthController {
 
   logout = (_, res) => {
     try {
-      res.clearCookie("auth_token");
+      this.authService.logout({ res });
       return res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
       this.#handleError(error, res);
@@ -68,12 +47,8 @@ export class AuthController {
 
   deleteUser = async (req, res) => {
     try {
-      const { id } = req.params;
-      const user = req.user;
-      if (!user.isAdmin)
-        throw new AuthorizationError("Unauthorized to delete users");
-
-      await this.authModel.deleteUser({ id });
+      console.log(req);
+      await this.authService.deleteUser({ data: req, res });
       return res.status(200).json({ message: "User deleted successfully" });
     } catch (error) {
       this.#handleError(error, res);
@@ -86,25 +61,5 @@ export class AuthController {
     }
     console.error(error);
     return res.status(500).json({ message: "Internal Server Error" });
-  };
-
-  #setAuthCookie = (res, user) => {
-    const token = jwt.sign(
-      { id: user.id, isAdmin: user.isAdmin },
-      config.jwtSecretKey,
-      { expiresIn: "1h" }
-    );
-
-    if (!token) throw new InternalServerError("Error generating token");
-
-    res
-      .cookie("auth_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 1000 * 60 * 60, // 1 hour
-      })
-      .status(200)
-      .send(user);
   };
 }
