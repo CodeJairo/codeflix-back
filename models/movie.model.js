@@ -1,6 +1,12 @@
 import crypto from "node:crypto";
 import DBLocal from "db-local";
 import { formatDateToYYYYMMDD } from "../utils/format-date.js";
+import {
+  NotFoundError,
+  AuthorizationError,
+  InternalServerError,
+  CustomError,
+} from "../utils/custom-error.js";
 
 const { Schema } = new DBLocal({ path: "./db" });
 
@@ -31,7 +37,7 @@ export class MovieModel {
     try {
       const movie = Movie.findOne({ title });
       const movieUrl = Movie.findOne({ video_url });
-      if (movie || movieUrl) throw new Error("Movie already exists");
+      if (movie || movieUrl) throw new ConflictError("Movie already exists");
 
       const id = crypto.randomUUID();
       const newMovie = Movie.create({
@@ -47,15 +53,21 @@ export class MovieModel {
 
       return newMovie;
     } catch (error) {
-      throw new Error("Movie creation failed: " + error.message);
+      if (error instanceof CustomError) throw error;
+      throw new InternalServerError("Movie creation failed");
     }
   }
 
   static async getAllMovies({ genre }) {
-    if (genre) {
-      return Movie.find({ isActive: true, genre: { $in: [genre] } });
+    try {
+      if (genre) {
+        return Movie.find({ isActive: true, genre: { $in: [genre] } });
+      }
+      return Movie.find({ isActive: true });
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new InternalServerError("Failed getting movies");
     }
-    return Movie.find({ isActive: true });
   }
 
   static async updateMovie({
@@ -64,44 +76,68 @@ export class MovieModel {
     movieId,
     partialMovie,
   }) {
-    const movie = await Movie.findOne({ _id: movieId });
-    if (!movie) throw new Error("Movie not found");
+    try {
+      const movie = await Movie.findOne({ _id: movieId });
+      if (!movie) throw new NotFoundError("Movie not found");
 
-    if (movie.createdBy === updaterUserId || isAdminUpdater === true) {
-      return await movie
-        .update({
-          ...partialMovie,
-          updatedAt: formatDateToYYYYMMDD(new Date()),
-        })
-        .save();
+      if (movie.createdBy === updaterUserId || isAdminUpdater === true) {
+        return await movie
+          .update({
+            ...partialMovie,
+            updatedAt: formatDateToYYYYMMDD(new Date()),
+          })
+          .save();
+      }
+
+      throw new AuthorizationError(
+        "You are not authorized to update this movie"
+      );
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new InternalServerError("Failed updating movie");
     }
-
-    throw new Error("Unauthorized");
   }
 
   static async deleteMovie({ isAdminDeleter, deleterUserId, movieId }) {
-    const movie = await Movie.findOne({ _id: movieId });
-    if (!movie) throw new Error("Movie not found");
-    if (movie.createdBy === deleterUserId || isAdminDeleter === true) {
-      return await movie.update({ isActive: false }).save();
+    try {
+      const movie = await Movie.findOne({ _id: movieId });
+      if (!movie) throw new NotFoundError("Movie not found");
+      if (movie.createdBy === deleterUserId || isAdminDeleter === true) {
+        return await movie.update({ isActive: false }).save();
+      }
+      throw new AuthorizationError(
+        "You are not authorized to delete this movie"
+      );
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new InternalServerError("Failed deleting movie");
     }
-    throw new Error("Unauthorized");
   }
 
   static async getMovieById({ movieId }) {
-    const movie = await Movie.findOne({ _id: movieId, isActive: true });
-    if (!movie) throw new Error("Movie not found");
-    return movie;
+    try {
+      const movie = await Movie.findOne({ _id: movieId, isActive: true });
+      if (!movie) throw new NotFoundError("Movie not found");
+      return movie;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new InternalServerError("Failed getting movie by ID");
+    }
   }
 
   static async getMoviesByName({ title }) {
-    if (title) {
-      const lowerCaseTitle = title.toLowerCase();
-      return await Movie.find({
-        title: { $regex: lowerCaseTitle, $options: "i" },
-        isActive: true,
-      });
+    try {
+      if (title) {
+        const lowerCaseTitle = title.toLowerCase();
+        return await Movie.find({
+          title: { $regex: lowerCaseTitle, $options: "i" },
+          isActive: true,
+        });
+      }
+      return await Movie.find({ isActive: true });
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new InternalServerError("Failed getting movies by name");
     }
-    return await Movie.find({ isActive: true });
   }
 }

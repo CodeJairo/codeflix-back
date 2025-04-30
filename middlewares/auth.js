@@ -28,7 +28,7 @@ export const authenticate = (getUserById) => {
     } catch (error) {
       res.clearCookie("auth_token");
       return res
-        .status(401)
+        .status(403)
         .json({ message: "User inactive, please contact support" });
     }
   };

@@ -5,9 +5,7 @@ import { EmailService } from "./services/email.service.js";
 import config from "./config/config.js";
 
 const emailService = new EmailService({
-  mailerEmail: config.mailerEmail,
-  mailerKey: config.mailerKey,
-  mailerService: config.mailerService,
+  config,
 });
 
 createApp({
