@@ -1,7 +1,7 @@
-import crypto from "node:crypto";
-import DBLocal from "db-local";
-import bcrypt from "bcrypt";
-import { formatDateToYYYYMMDD } from "../utils/format-date.js";
+import crypto from 'node:crypto';
+import DBLocal from 'db-local';
+import bcrypt from 'bcrypt';
+import { formatDateToYYYYMMDD } from '../utils/format-date.js';
 import {
   AuthorizationError,
   ConflictError,
@@ -9,11 +9,11 @@ import {
   NotFoundError,
   CustomError,
   AuthenticationError,
-} from "../utils/custom-error.js";
+} from '../utils/custom-error.js';
 
-const { Schema } = new DBLocal({ path: "./db" });
+const { Schema } = new DBLocal({ path: './db' });
 
-const User = Schema("User", {
+const User = Schema('User', {
   _id: { type: String, required: true },
   username: { type: String, required: true },
   email: { type: String, required: true },
@@ -30,7 +30,7 @@ export class AuthModel {
     try {
       const user = await User.findOne({ email });
       const isValid = await bcrypt.compare(password, user.password);
-      if (!isValid) throw new AuthenticationError("Invalid credentials");
+      if (!isValid) throw new AuthenticationError('Invalid credentials');
       return {
         id: user._id,
         username: user.username,
@@ -41,7 +41,7 @@ export class AuthModel {
       };
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      throw new InternalServerError("User login failed");
+      throw new InternalServerError('User login failed');
     }
   }
 
@@ -66,23 +66,22 @@ export class AuthModel {
   }
   catch(error) {
     if (error instanceof CustomError) throw error;
-    throw new InternalServerError("User registration failed");
+    throw new InternalServerError('User registration failed');
   }
 
   static async deleteUser({ id }) {
     try {
       let user = User.findOne({ _id: id });
       console.error(user);
-      if (!user) throw new NotFoundError("User not found");
-      if (!user.isActive) throw new ConflictError("User already deleted");
-      if (user.isAdmin)
-        throw new AuthorizationError("Cannot delete admin users");
+      if (!user) throw new NotFoundError('User not found');
+      if (!user.isActive) throw new ConflictError('User already deleted');
+      if (user.isAdmin) throw new AuthorizationError('Cannot delete admin users');
       user.isActive = false;
       user.updatedAt = formatDateToYYYYMMDD(new Date());
       user.save();
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      throw new InternalServerError("User deletion failed");
+      throw new InternalServerError('User deletion failed');
     }
   }
 
@@ -93,21 +92,21 @@ export class AuthModel {
       return true;
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      throw new InternalServerError("User validation failed");
+      throw new InternalServerError('User validation failed');
     }
   }
 
   static async verifyEmail({ email }) {
     try {
       const user = User.findOne({ email });
-      if (!user) throw new NotFoundError("User not found");
-      if (user.isValidated) throw new ConflictError("Email already verified");
+      if (!user) throw new NotFoundError('User not found');
+      if (user.isValidated) throw new ConflictError('Email already verified');
       user.isValidated = true;
       user.updatedAt = formatDateToYYYYMMDD(new Date());
       user.save();
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      throw new InternalServerError("Email verification failed");
+      throw new InternalServerError('Email verification failed');
     }
   }
 

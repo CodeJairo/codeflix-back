@@ -1,8 +1,7 @@
-import { CustomError } from "../utils/custom-error.js";
+import { CustomError } from '../utils/custom-error.js';
 
 export class AuthController {
-  constructor({ authModel, emailService, authService }) {
-    this.authModel = authModel;
+  constructor({ emailService, authService }) {
     this.emailService = emailService;
     this.authService = authService;
   }
@@ -30,7 +29,7 @@ export class AuthController {
       const user = await this.emailService.verifyEmail({
         token: req.params.token,
       });
-      res.status(200).json({ message: "Email verified successfully" });
+      res.status(200).json({ message: 'Email verified successfully' });
     } catch (error) {
       this.#handleError(error, res);
     }
@@ -39,7 +38,7 @@ export class AuthController {
   logout = (_, res) => {
     try {
       this.authService.logout({ res });
-      return res.status(200).json({ message: "Logged out successfully" });
+      return res.status(200).json({ message: 'Logged out successfully' });
     } catch (error) {
       this.#handleError(error, res);
     }
@@ -49,7 +48,7 @@ export class AuthController {
     try {
       console.log(req);
       await this.authService.deleteUser({ data: req, res });
-      return res.status(200).json({ message: "User deleted successfully" });
+      return res.status(200).json({ message: 'User deleted successfully' });
     } catch (error) {
       this.#handleError(error, res);
     }
@@ -60,6 +59,6 @@ export class AuthController {
       return res.status(error.statusCode).json({ message: error.message });
     }
     console.error(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: 'Internal Server Error' });
   };
 }

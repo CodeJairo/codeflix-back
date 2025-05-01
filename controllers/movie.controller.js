@@ -1,4 +1,4 @@
-import { CustomError } from "../utils/custom-error.js";
+import { CustomError } from '../utils/custom-error.js';
 
 export class MovieController {
   constructor({ movieModel }) {
@@ -16,7 +16,7 @@ export class MovieController {
       if (error instanceof CustomError) {
         return res.status(error.statusCode).json({ message: error.message });
       }
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: 'Internal Server Error' });
     }
   };
 
@@ -34,7 +34,7 @@ export class MovieController {
       if (error instanceof CustomError) {
         return res.status(error.statusCode).json({ message: error.message });
       }
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: 'Internal Server Error' });
     }
   };
 
@@ -46,12 +46,12 @@ export class MovieController {
         deleterUserId: req.user.id,
         movieId: id,
       });
-      res.status(200).send({ message: "Movie deleted successfully" });
+      res.status(200).send({ message: 'Movie deleted successfully' });
     } catch (error) {
       if (error instanceof CustomError) {
         return res.status(error.statusCode).json({ message: error.message });
       }
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: 'Internal Server Error' });
     }
   };
 
@@ -64,7 +64,7 @@ export class MovieController {
       if (error instanceof CustomError) {
         return res.status(error.statusCode).json({ message: error.message });
       }
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: 'Internal Server Error' });
     }
   };
 
@@ -77,7 +77,7 @@ export class MovieController {
       if (error instanceof CustomError) {
         return res.status(error.statusCode).json({ message: error.message });
       }
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: 'Internal Server Error' });
     }
   };
 
@@ -90,7 +90,7 @@ export class MovieController {
       if (error instanceof CustomError) {
         return res.status(error.statusCode).json({ message: error.message });
       }
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: 'Internal Server Error' });
     }
   };
 }
