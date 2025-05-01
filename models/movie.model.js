@@ -1,7 +1,13 @@
 import crypto from 'node:crypto';
 import DBLocal from 'db-local';
 import { formatDateToYYYYMMDD } from '../utils/format-date.js';
-import { NotFoundError, AuthorizationError, InternalServerError, CustomError } from '../utils/custom-error.js';
+import {
+  NotFoundError,
+  AuthorizationError,
+  InternalServerError,
+  CustomError,
+  ConflictError,
+} from '../utils/custom-error.js';
 
 const { Schema } = new DBLocal({ path: './db' });
 

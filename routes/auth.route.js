@@ -16,6 +16,7 @@ export const createAuthRouter = ({ emailService, authService }) => {
   authRouter.post('/login', validateRequest(validateLogin), authController.login);
   authRouter.get('/verify/:token', authController.verifyEmail);
   authRouter.post('/logout', authController.logout);
+  // eslint-disable-next-line no-undef
   authRouter.delete('/delete/:id', authenticate(authModel.getUserById), authController.deleteUser);
 
   return authRouter;

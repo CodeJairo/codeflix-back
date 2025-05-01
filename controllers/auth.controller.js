@@ -26,7 +26,7 @@ export class AuthController {
 
   verifyEmail = async (req, res) => {
     try {
-      const user = await this.emailService.verifyEmail({
+      await this.emailService.verifyEmail({
         token: req.params.token,
       });
       res.status(200).json({ message: 'Email verified successfully' });

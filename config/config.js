@@ -10,6 +10,7 @@ const config = {
   mailerService: env.get('MAILER_SERVICE').required().asString(),
   mailerEmail: env.get('MAILER_EMAIL').required().asString(),
   mailerKey: env.get('MAILER_KEY').required().asString(),
+  nodeEnvironment: env.get('NODE_ENV').default('development').asString(),
 };
 
 export default config;

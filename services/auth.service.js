@@ -37,6 +37,7 @@ export class AuthService {
         password,
       });
       if (!user) throw new InternalServerError('Error registering user');
+      // eslint-disable-next-line no-undef
       setImmediate(async () => {
         await this.emailService.sendVerificationEmail(user);
       });
@@ -67,7 +68,7 @@ export class AuthService {
     }
   }
 
-  async deleteUser({ data, res }) {
+  async deleteUser({ data }) {
     try {
       const user = data.user;
       console.log(user);
@@ -88,7 +89,7 @@ export class AuthService {
     res
       .cookie('auth_token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: config.nodeEnvironment === 'production',
         sameSite: 'strict',
         maxAge: 1000 * 60 * 60, // 1 hour
       })
