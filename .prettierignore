@@ -1,0 +1,19 @@
+# Dependencias
+node_modules
+
+# Builds
+dist
+build
+out
+
+# Config y entorno
+.env
+*.log
+
+# Cache y editor
+.vscode
+.cache
+
+# Archivos comunes que no se deben formatear
+package-lock.json
+yarn.lock
