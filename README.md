@@ -84,7 +84,7 @@
 | DELETE | `/movie/delete/:id`           | Eliminar/desactivar película  |
 | GET    | `/movie/get-all`              | Listar todas las películas    |
 | GET    | `/movie/get/:id`              | Obtener película por ID       |
-| GET    | `/movie/get-by-name?title=…`  | Buscar películas por título   |
+| GET    | `/movie/get-by-title?title=…`  | Buscar películas por título   |
 | GET    | `/movie/get-all?genre=…`      | Filtrar películas por género  |
 
 ---
