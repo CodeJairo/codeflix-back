@@ -9,7 +9,7 @@ const userSchema = z.object({
       invalid_type_error: 'Username must be a string',
     })
     .min(5, { message: 'Must be 5 or more characters long' })
-    .max(50, { message: 'Must be 50 or fewer characters long' }),
+    .max(15, { message: 'Must be 15 or fewer characters long' }),
 
   email: z
     .string({

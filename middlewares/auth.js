@@ -22,9 +22,13 @@ export const authenticate = getUserById => {
       }
 
       req.user = user;
+
       next();
     } catch (error) {
-      console.log(error);
+      if (error instanceof jwt.JsonWebTokenError) {
+        res.clearCookie('auth_token');
+        throw new jwt.TokenExpiredError('Token expired');
+      }
       res.clearCookie('auth_token');
       return res.status(403).json({ message: 'User inactive, please contact support' });
     }

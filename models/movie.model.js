@@ -1,13 +1,7 @@
 import crypto from 'node:crypto';
 import DBLocal from 'db-local';
 import { formatDateToYYYYMMDD } from '../utils/format-date.js';
-import {
-  NotFoundError,
-  AuthorizationError,
-  InternalServerError,
-  CustomError,
-  ConflictError,
-} from '../utils/custom-error.js';
+import { NotFoundError, InternalServerError, CustomError } from '../utils/custom-error.js';
 
 const { Schema } = new DBLocal({ path: './db' });
 
@@ -26,12 +20,9 @@ const Movie = Schema('Movie', {
 });
 
 export class MovieModel {
-  static async createMovie({ title, description, release_date, duration_minutes, video_url, genre, createdBy }) {
+  static async createMovie({ data, createdBy }) {
     try {
-      const movie = Movie.findOne({ title });
-      const movieUrl = Movie.findOne({ video_url });
-      if (movie || movieUrl) throw new ConflictError('Movie already exists');
-
+      const { title, description, release_date, duration_minutes, video_url, genre } = data;
       const id = crypto.randomUUID();
       const newMovie = Movie.create({
         _id: id,
@@ -43,64 +34,69 @@ export class MovieModel {
         genre,
         createdBy,
       }).save();
-
       return newMovie;
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      throw new InternalServerError('Movie creation failed');
+      throw new InternalServerError('User login failed');
     }
   }
 
-  static async getAllMovies({ genre }) {
+  static async updateMovie({ movieId, partialMovie }) {
     try {
-      if (genre) {
-        return Movie.find({ isActive: true, genre: { $in: [genre] } });
-      }
-      return Movie.find({ isActive: true });
+      let movie = await Movie.findOne({ _id: movieId, isActive: true });
+      if (!movie) throw new NotFoundError('Movie not found');
+      movie = await movie.update({ ...partialMovie, updatedAt: formatDateToYYYYMMDD(new Date()) }).save();
+      return movie;
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      throw new InternalServerError('Failed getting movies');
+      throw new InternalServerError('Failed fetching movies');
     }
   }
 
-  static async updateMovie({ isAdminUpdater, updaterUserId, movieId, partialMovie }) {
+  static async deleteMovie({ movieId }) {
     try {
-      const movie = await Movie.findOne({ _id: movieId });
+      const movie = await Movie.findOne({ _id: movieId, isActive: true });
       if (!movie) throw new NotFoundError('Movie not found');
-
-      if (movie.createdBy === updaterUserId || isAdminUpdater === true) {
-        return await movie
-          .update({
-            ...partialMovie,
-            updatedAt: formatDateToYYYYMMDD(new Date()),
-          })
-          .save();
-      }
-
-      throw new AuthorizationError('You are not authorized to update this movie');
-    } catch (error) {
-      if (error instanceof CustomError) throw error;
-      throw new InternalServerError('Failed updating movie');
-    }
-  }
-
-  static async deleteMovie({ isAdminDeleter, deleterUserId, movieId }) {
-    try {
-      const movie = await Movie.findOne({ _id: movieId });
-      if (!movie) throw new NotFoundError('Movie not found');
-      if (movie.createdBy === deleterUserId || isAdminDeleter === true) {
-        return await movie.update({ isActive: false }).save();
-      }
-      throw new AuthorizationError('You are not authorized to delete this movie');
+      return await movie.update({ isActive: false }).save();
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new InternalServerError('Failed deleting movie');
     }
   }
 
-  static async getMovieById({ movieId }) {
+  static async getAllMovies({ title, genre }) {
     try {
-      const movie = await Movie.findOne({ _id: movieId, isActive: true });
+      // Case 1: both title and genre are provided
+      if (title && genre) {
+        return await Movie.find(
+          m =>
+            m.title.toLowerCase().includes(title.toLowerCase()) &&
+            m.genre.some(g => genre.includes(g)) &&
+            m.isActive === true
+        );
+      }
+
+      // Case 2: only title is provided
+      if (title) {
+        return await Movie.find(m => m.title.toLowerCase().includes(title.toLowerCase()) && m.isActive === true);
+      }
+
+      // Case 3: only genre is provided
+      if (genre) {
+        return await Movie.find(m => m.genre.some(g => genre.includes(g)) && m.isActive === true);
+      }
+
+      // Case 4: neither title nor genre is provided
+      return await Movie.find({ isActive: true });
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new InternalServerError('Failed fetching movies');
+    }
+  }
+
+  static async getMovieById({ id }) {
+    try {
+      const movie = await Movie.findOne({ _id: id, isActive: true });
       if (!movie) throw new NotFoundError('Movie not found');
       return movie;
     } catch (error) {
@@ -109,19 +105,30 @@ export class MovieModel {
     }
   }
 
-  static async getMoviesByName({ title }) {
+  static async movieExists({ title, video_url }) {
     try {
-      if (title) {
-        const lowerCaseTitle = title.toLowerCase();
-        return await Movie.find({
-          title: { $regex: lowerCaseTitle, $options: 'i' },
-          isActive: true,
-        });
-      }
-      return await Movie.find({ isActive: true });
+      const movie = await Movie.findOne(
+        m =>
+          (m.title.toLowerCase() === title.toLowerCase() || m.video_url.toLowerCase() === video_url) &&
+          m.isActive === true
+      );
+      return !!movie;
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      throw new InternalServerError('Failed getting movies by name');
+      throw new InternalServerError('Failed checking movie existence');
+    }
+  }
+
+  static async isMovieCreator({ userId, movieId }) {
+    try {
+      const movie = await Movie.findOne({ _id: movieId, isActive: true });
+      // const movie = await Movie.findOne(m => m._id === movieId && m.isActive === true);
+      if (!movie) throw new NotFoundError('Movie not found');
+      if (movie.createdBy !== userId) return false;
+      return true;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new InternalServerError('Failed checking movie creator');
     }
   }
 }

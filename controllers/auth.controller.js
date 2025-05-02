@@ -6,15 +6,6 @@ export class AuthController {
     this.authService = authService;
   }
 
-  login = async (req, res) => {
-    try {
-      const user = await this.authService.login({ data: req.body, res });
-      res.status(200).json(user);
-    } catch (error) {
-      this.#handleError(error, res);
-    }
-  };
-
   register = async (req, res) => {
     try {
       const user = await this.authService.register({ data: req.body, res });
@@ -24,12 +15,10 @@ export class AuthController {
     }
   };
 
-  verifyEmail = async (req, res) => {
+  login = async (req, res) => {
     try {
-      await this.emailService.verifyEmail({
-        token: req.params.token,
-      });
-      res.status(200).json({ message: 'Email verified successfully' });
+      const user = await this.authService.login({ data: req.body, res });
+      res.status(200).json(user);
     } catch (error) {
       this.#handleError(error, res);
     }
@@ -54,11 +43,21 @@ export class AuthController {
     }
   };
 
+  verifyEmail = async (req, res) => {
+    try {
+      await this.emailService.verifyEmail({
+        token: req.params.token,
+      });
+      res.status(200).json({ message: 'Email verified successfully' });
+    } catch (error) {
+      this.#handleError(error, res);
+    }
+  };
+
   #handleError = (error, res) => {
     if (error instanceof CustomError) {
       return res.status(error.statusCode).json({ message: error.message });
     }
-    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   };
 }

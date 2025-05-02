@@ -44,15 +44,16 @@ const movieSchema = z.object({
     .array(
       z.enum([
         'action',
+        'adventure',
+        'animation',
         'comedy',
+        'documentary',
         'drama',
+        'fantasy',
         'horror',
         'romance',
         'sci-fi',
         'thriller',
-        'fantasy',
-        'documentary',
-        'animation',
       ]),
       {
         invalid_type_error: 'Genre must be an array of strings',

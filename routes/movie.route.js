@@ -21,11 +21,9 @@ export const createMovieRouter = ({ authModel, movieService }) => {
     validateRequest(validatePartialMovie),
     movieController.update
   );
-
   movieRouter.delete('/delete/:id', authenticate(authModel.getUserById), movieController.delete);
-  movieRouter.get('/get-all', movieController.getAll);
+  movieRouter.get('/get', movieController.getAll);
   movieRouter.get('/get/:id', movieController.getById);
-  movieRouter.get('/get-by-name', movieController.getByName);
 
   return movieRouter;
 };

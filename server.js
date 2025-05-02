@@ -13,4 +13,5 @@ createApp({
   emailService,
   authService,
   movieService,
+  authModel: AuthModel,
 });

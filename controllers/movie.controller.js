@@ -1,96 +1,69 @@
 import { CustomError } from '../utils/custom-error.js';
 
 export class MovieController {
-  constructor({ movieModel }) {
-    this.movieModel = movieModel;
+  constructor({ movieService }) {
+    this.movieService = movieService;
   }
 
   create = async (req, res) => {
     try {
-      const movie = await this.movieModel.createMovie({
-        ...req.body,
-        createdBy: req.user.id,
-      });
-      res.status(200).send(movie);
+      const movie = await this.movieService.createMovie({ data: req.body, createdBy: req.user.id });
+      res.status(200).json(movie);
     } catch (error) {
-      if (error instanceof CustomError) {
-        return res.status(error.statusCode).json({ message: error.message });
-      }
-      return res.status(500).json({ message: 'Internal Server Error' });
+      this.#handleError(error, res);
     }
   };
 
   update = async (req, res) => {
     try {
-      const { id } = req.params;
-      const updatedMovie = await this.movieModel.updateMovie({
-        isAdminUpdater: req.user.isAdmin,
-        updaterUserId: req.user.id,
-        movieId: id,
+      const { id: movieId } = req.params;
+
+      const updatedMovie = await this.movieService.updateMovie({
+        user: req.user,
+        movieId,
         partialMovie: req.body,
       });
       res.status(200).send(updatedMovie);
     } catch (error) {
-      if (error instanceof CustomError) {
-        return res.status(error.statusCode).json({ message: error.message });
-      }
-      return res.status(500).json({ message: 'Internal Server Error' });
+      this.#handleError(error, res);
     }
   };
 
   delete = async (req, res) => {
     try {
       const { id } = req.params;
-      await this.movieModel.deleteMovie({
-        isAdminDeleter: req.user.isAdmin,
-        deleterUserId: req.user.id,
-        movieId: id,
-      });
+      await this.movieService.deleteMovie({ user: req.user, movieId: id });
       res.status(200).send({ message: 'Movie deleted successfully' });
     } catch (error) {
-      if (error instanceof CustomError) {
-        return res.status(error.statusCode).json({ message: error.message });
-      }
-      return res.status(500).json({ message: 'Internal Server Error' });
+      this.#handleError(error, res);
     }
   };
 
   getAll = async (req, res) => {
     try {
-      const { genre } = req.query;
-      const movies = await this.movieModel.getAllMovies({ genre });
+      const { title, genre } = req.query;
+      const movies = await this.movieService.getAllMovies({ title, genre });
       res.status(200).send(movies);
     } catch (error) {
-      if (error instanceof CustomError) {
-        return res.status(error.statusCode).json({ message: error.message });
-      }
-      return res.status(500).json({ message: 'Internal Server Error' });
+      this.#handleError(error, res);
     }
   };
 
   getById = async (req, res) => {
     try {
       const { id } = req.params;
-      const movie = await this.movieModel.getMovieById({ movieId: id });
+      const movie = await this.movieService.getMovieById({ id });
       res.status(200).send(movie);
     } catch (error) {
-      if (error instanceof CustomError) {
-        return res.status(error.statusCode).json({ message: error.message });
-      }
-      return res.status(500).json({ message: 'Internal Server Error' });
+      this.#handleError(error, res);
     }
   };
 
-  getByName = async (req, res) => {
-    try {
-      const { title } = req.query;
-      const movies = await this.movieModel.getMoviesByName({ title });
-      res.status(200).send(movies);
-    } catch (error) {
-      if (error instanceof CustomError) {
-        return res.status(error.statusCode).json({ message: error.message });
-      }
-      return res.status(500).json({ message: 'Internal Server Error' });
+  #handleError = (error, res) => {
+    if (error instanceof CustomError) {
+      return res.status(error.statusCode).json({ message: error.message });
     }
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
   };
 }

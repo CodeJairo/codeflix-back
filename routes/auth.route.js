@@ -4,7 +4,7 @@ import { validateRequest } from '../middlewares/validate-request.js';
 import { validateLogin, validateUser } from '../schemas/user.schema.js';
 import { authenticate } from '../middlewares/auth.js';
 
-export const createAuthRouter = ({ emailService, authService }) => {
+export const createAuthRouter = ({ emailService, authService, authModel }) => {
   const authRouter = Router();
 
   const authController = new AuthController({
@@ -14,10 +14,9 @@ export const createAuthRouter = ({ emailService, authService }) => {
 
   authRouter.post('/register', validateRequest(validateUser), authController.register);
   authRouter.post('/login', validateRequest(validateLogin), authController.login);
-  authRouter.get('/verify/:token', authController.verifyEmail);
   authRouter.post('/logout', authController.logout);
-  // eslint-disable-next-line no-undef
   authRouter.delete('/delete/:id', authenticate(authModel.getUserById), authController.deleteUser);
+  authRouter.get('/verify/:token', authController.verifyEmail);
 
   return authRouter;
 };
