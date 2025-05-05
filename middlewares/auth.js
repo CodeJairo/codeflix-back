@@ -21,6 +21,8 @@ export const authenticate = getUserById => {
         return res.status(403).json({ message: 'User inactive, please contact support' });
       }
 
+
+
       req.user = user;
 
       next();

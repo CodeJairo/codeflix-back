@@ -54,6 +54,14 @@ export class AuthController {
     }
   };
 
+  checkSession = async (req, res) => {
+    try {
+      await this.authService.checkSession({ data: req, res });
+    } catch (error) {
+      this.#handleError(error, res);
+    }
+  };
+
   #handleError = (error, res) => {
     if (error instanceof CustomError) {
       return res.status(error.statusCode).json({ message: error.message });

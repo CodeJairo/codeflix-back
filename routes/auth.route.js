@@ -16,6 +16,7 @@ export const createAuthRouter = ({ emailService, authService, authModel }) => {
   authRouter.post('/login', validateRequest(validateLogin), authController.login);
   authRouter.post('/logout', authController.logout);
   authRouter.delete('/delete/:id', authenticate(authModel.getUserById), authController.deleteUser);
+  authRouter.get('/check-session', authenticate(authModel.getUserById), authController.checkSession);
   authRouter.get('/verify/:token', authController.verifyEmail);
 
   return authRouter;

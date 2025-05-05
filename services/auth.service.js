@@ -80,8 +80,19 @@ export class AuthService {
     }
   }
 
+  async checkSession({ data, res }) {
+    try {
+      const user = data.user;
+      if (!user) throw new AuthenticationError('User not authenticated');
+      this.#setAuthCookie(res, user);
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new InternalServerError('Error checking session');
+    }
+  }
+
   #setAuthCookie = (res, user) => {
-    const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, config.jwtSecretKey, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, config.jwtSecretKey, { expiresIn: '15m' });
 
     if (!token) throw new InternalServerError('Error generating token');
 
@@ -90,7 +101,7 @@ export class AuthService {
         httpOnly: true,
         secure: config.nodeEnvironment === 'production',
         sameSite: 'strict',
-        maxAge: 1000 * 60 * 60, // 1 hour
+        maxAge: 1000 * 60 * 20, // 20 minutes
       })
       .status(200)
       .send(user);
