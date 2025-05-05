@@ -53,6 +53,7 @@
    MAILER_SERVICE=gmail      # O el servicio que uses
    MAILER_EMAIL=tu_email@dominio.com
    MAILER_KEY=tu_app_password_o_api_key
+   NODE_ENV=development # [development, production]
    ```
 
 4. **Iniciar servidor**  
@@ -82,10 +83,8 @@
 | POST   | `/movie/create`               | Crear película                |
 | PATCH  | `/movie/update/:id`           | Actualizar película           |
 | DELETE | `/movie/delete/:id`           | Eliminar/desactivar película  |
-| GET    | `/movie/get-all`              | Listar todas las películas    |
+| GET    | `/movie/get`                  | Listar todas las películas    |
 | GET    | `/movie/get/:id`              | Obtener película por ID       |
-| GET    | `/movie/get-by-title?title=…`  | Buscar películas por título   |
-| GET    | `/movie/get-all?genre=…`      | Filtrar películas por género  |
 
 ---
 
