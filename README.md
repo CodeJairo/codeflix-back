@@ -1,7 +1,8 @@
 # Codeflix Backend API
 
 > **API RESTful** de autenticación de usuarios y gestión de películas.
-
+> 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/CodeJairo/codeflix-back)
 ---
 
 ## 📋 Características
